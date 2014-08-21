@@ -17,7 +17,7 @@ func main() {
 	flag.IntVar(&reqsSec, "r", 200, "Requests a second")
 	flag.StringVar(&host, "h", ":6379", "Redis host")
 	flag.StringVar(&filename, "f", "", "Source Data Filename (required)")
-	flag.StringVar(&providerName, "p", "redis", "Load provider (redis, nsq)")
+	flag.StringVar(&providerName, "p", "redis", "Load provider (redis, nsq, rabbit)")
 	flag.Parse()
 	topic := flag.Arg(0)
 
@@ -43,11 +43,16 @@ func main() {
 			switch providerName {
 			case "nsq":
 				provider = &NSQProvider{}
+			case "rabbit":
+				provider = &RabbitProvider{}
 			default:
 				provider = &RedisProvider{}
 			}
 
-			provider.Connect(host)
+			err := provider.Connect(host)
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			file, err := os.Open(filename)
 			if err != nil {
@@ -60,8 +65,8 @@ func main() {
 				scanner := bufio.NewScanner(file)
 				for scanner.Scan() {
 					<-throttle
-					err := provider.Publish(topic, scanner.Text())
 
+					err := provider.Publish(topic, scanner.Text())
 					if err != nil {
 						log.Fatal(err)
 					} else {
