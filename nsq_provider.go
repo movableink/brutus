@@ -25,8 +25,8 @@ func (p *NSQProvider) Command(ac *AppConfig, pusher DataPusher) cli.Command {
 			p.topic = c.String("topic")
 
 			if p.topic == "" {
-				fmt.Println("ERROR: --exchange, -e argument is required\n")
-				cli.ShowCommandHelp(c, "rabbit")
+				fmt.Println("ERROR: --topic, -t topic is required\n")
+				cli.ShowCommandHelp(c, "nsq")
 				return
 			}
 
