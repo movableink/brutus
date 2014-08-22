@@ -1,9 +1,9 @@
 package main
 
-import "github.com/codegangsta/cli"
+import "github.com/spf13/cobra"
 
 type Provider interface {
-	Command(*AppConfig, DataPusher) cli.Command
+	Command(*AppConfig, DataPusher) *cobra.Command
 	Connect() error
 	Publish(msg string) error
 }

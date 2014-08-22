@@ -2,13 +2,12 @@ package main
 
 import (
 	"log"
-	"os"
 	"time"
 )
 
 func main() {
 	config := &AppConfig{}
-	err := config.Parse(os.Args, pusher)
+	err := config.RunCli(pusher)
 	if err != nil {
 		log.Fatal(err)
 	}

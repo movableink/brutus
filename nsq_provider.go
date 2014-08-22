@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/bitly/go-nsq"
-	"github.com/codegangsta/cli"
+	"github.com/spf13/cobra"
 )
 
 type NSQProvider struct {
@@ -14,36 +13,19 @@ type NSQProvider struct {
 	config        *AppConfig
 }
 
-func (p *NSQProvider) Command(ac *AppConfig, pusher DataPusher) cli.Command {
-	p.config = ac
-
-	return cli.Command{
-		Name:  "nsq",
-		Usage: "push data to an NSQ daemon",
-		Action: func(c *cli.Context) {
-			p.server = c.String("server")
-			p.topic = c.String("topic")
-
-			if p.topic == "" {
-				fmt.Println("ERROR: --topic, -t topic is required\n")
-				cli.ShowCommandHelp(c, "nsq")
-				return
-			}
-
+func (p *NSQProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command {
+	command := cobra.Command{
+		Use:   "nsq",
+		Short: "push data to an NSQ daemon",
+		Run: func(cmd *cobra.Command, args []string) {
 			pusher(p, ac)
 		},
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "server, s",
-				Value: "localhost:4150",
-				Usage: "NSQ server to push data to",
-			},
-			cli.StringFlag{
-				Name:  "topic, t",
-				Usage: "topic to publish data on",
-			},
-		},
 	}
+
+	command.Flags().StringVarP(&p.server, "server", "s", "localhost:4150", "NSQ server to push to")
+	command.Flags().StringVarP(&p.topic, "topic", "t", "brutus.messages", "topic to publish messages on")
+
+	return &command
 }
 
 func (p *NSQProvider) Connect() error {
