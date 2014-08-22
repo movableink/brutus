@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
 
-	"github.com/codegangsta/cli"
+	"github.com/spf13/cobra"
 	"github.com/streadway/amqp"
 )
 
@@ -15,45 +14,20 @@ type RabbitProvider struct {
 	server, exchange, routingKey string
 }
 
-func (p *RabbitProvider) Command(ac *AppConfig, pusher DataPusher) cli.Command {
-	return cli.Command{
-		Name:  "rabbit",
-		Usage: "push data to a RabbitMQ exchange",
-		Action: func(c *cli.Context) {
-			p.server = c.String("server")
-			p.exchange = c.String("exchange")
-			p.routingKey = c.String("key")
-
-			if p.exchange == "" {
-				fmt.Println("ERROR: --exchange, -e argument is required\n")
-				cli.ShowCommandHelp(c, "rabbit")
-				return
-			}
-
-			if p.routingKey == "" {
-				fmt.Println("ERROR: --key, -k argument is required\n")
-				cli.ShowCommandHelp(c, "rabbit")
-				return
-			}
-
+func (p *RabbitProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command {
+	command := cobra.Command{
+		Use:   "rabbit",
+		Short: "push data to a RabbitMQ exchange",
+		Run: func(cmd *cobra.Command, args []string) {
 			pusher(p, ac)
 		},
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "server, s",
-				Value: "amqp://localhost",
-				Usage: "rabbit server to push data to",
-			},
-			cli.StringFlag{
-				Name:  "exchange, e",
-				Usage: "exchange to push data to",
-			},
-			cli.StringFlag{
-				Name:  "key, k",
-				Usage: "routing key to use when pushing data",
-			},
-		},
 	}
+
+	command.Flags().StringVarP(&p.server, "server", "s", "amqp://localhost", "rabbit server to push to")
+	command.Flags().StringVarP(&p.exchange, "exchange", "e", "brutus", "exchange to use when publishing")
+	command.Flags().StringVarP(&p.routingKey, "key", "k", "brutus.messages", "routing key to publish messages to")
+
+	return &command
 }
 
 func (p *RabbitProvider) Connect() error {

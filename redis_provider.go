@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/codegangsta/cli"
 	"github.com/garyburd/redigo/redis"
+	"github.com/spf13/cobra"
 )
 
 type RedisProvider struct {
@@ -12,34 +10,19 @@ type RedisProvider struct {
 	conn         redis.Conn
 }
 
-func (p *RedisProvider) Command(ac *AppConfig, pusher DataPusher) cli.Command {
-	return cli.Command{
-		Name:  "redis",
-		Usage: "push data to a redis list",
-		Action: func(c *cli.Context) {
-			p.server = c.String("server")
-			p.list = c.String("list")
-
-			if p.list == "" {
-				fmt.Println("ERROR: --list, -l argument is required\n")
-				cli.ShowCommandHelp(c, "redis")
-				return
-			}
-
+func (p *RedisProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command {
+	command := cobra.Command{
+		Use:   "redis",
+		Short: "push data to a redis list",
+		Run: func(cmd *cobra.Command, args []string) {
 			pusher(p, ac)
 		},
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "server, s",
-				Value: "localhost:6379",
-				Usage: "redis server to push data to",
-			},
-			cli.StringFlag{
-				Name:  "list, l",
-				Usage: "list key in redis to push data to",
-			},
-		},
 	}
+
+	command.Flags().StringVarP(&p.server, "server", "s", "localhost:6379", "redis server to push to")
+	command.Flags().StringVarP(&p.list, "list", "l", "brutus_list", "list key to push to")
+
+	return &command
 }
 
 func (p *RedisProvider) Connect() error {
