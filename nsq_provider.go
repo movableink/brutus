@@ -19,7 +19,7 @@ func (p *NSQProvider) Command(ac *AppConfig, pusher DataPusher) cli.Command {
 
 	return cli.Command{
 		Name:  "nsq",
-		Usage: "push data to an NSQ server",
+		Usage: "push data to an NSQ daemon",
 		Action: func(c *cli.Context) {
 			p.server = c.String("server")
 			p.topic = c.String("topic")
