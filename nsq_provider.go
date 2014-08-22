@@ -16,7 +16,7 @@ type NSQProvider struct {
 func (p *NSQProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command {
 	command := cobra.Command{
 		Use:   "nsq",
-		Short: "push data to an NSQ server",
+		Short: "push data to an NSQ daemon",
 		Run: func(cmd *cobra.Command, args []string) {
 			pusher(p, ac)
 		},

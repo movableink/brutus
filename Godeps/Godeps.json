@@ -19,7 +19,7 @@
 		},
 		{
 			"ImportPath": "github.com/garyburd/redigo/redis",
-			"Rev": "917dc959b1d73370434f1f2339ca86a67e551ebb"
+			"Rev": "8d6d4f929affa96b443abd7fdb5a32ffc27865dc"
 		},
 		{
 			"ImportPath": "github.com/mreiferson/go-snappystream",
