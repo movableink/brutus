@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/movableink/brutus",
-	"GoVersion": "go1.3",
+	"GoVersion": "go1.3.1",
 	"Deps": [
 		{
 			"ImportPath": "code.google.com/p/snappy-go/snappy",
@@ -18,6 +18,11 @@
 			"Rev": "3378bdcb5cebedcbf8b5750edee28010f128fe24"
 		},
 		{
+			"ImportPath": "github.com/codegangsta/cli",
+			"Comment": "1.0.0-88-g27ecc97",
+			"Rev": "27ecc97192df1bf053a22b04463f2b51b8b8373e"
+		},
+		{
 			"ImportPath": "github.com/garyburd/redigo/redis",
 			"Rev": "917dc959b1d73370434f1f2339ca86a67e551ebb"
 		},
@@ -25,6 +30,10 @@
 			"ImportPath": "github.com/mreiferson/go-snappystream",
 			"Comment": "v0.2.1",
 			"Rev": "dfbfd82fd396421219ce275fd8c973af09e3d8a8"
+		},
+		{
+			"ImportPath": "github.com/streadway/amqp",
+			"Rev": "bbc42d384b424cc08732fb935c742fa4fa9e361b"
 		}
 	]
 }
