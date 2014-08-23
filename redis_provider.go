@@ -1,12 +1,15 @@
 package main
 
 import (
+	"time"
+
 	"github.com/garyburd/redigo/redis"
 	"github.com/spf13/cobra"
 )
 
 type RedisProvider struct {
 	server, list string
+	pool         *redis.Pool
 	conn         redis.Conn
 	messageCount int
 }
@@ -16,6 +19,7 @@ func (p *RedisProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command
 		Use:   "redis",
 		Short: "push data to a redis list",
 		Run: func(cmd *cobra.Command, args []string) {
+			p.pool = newPool(p.server, "")
 			pusher(p, ac)
 		},
 	}
@@ -28,19 +32,46 @@ func (p *RedisProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command
 
 func (p *RedisProvider) Connect() error {
 	var err error
-	p.conn, err = redis.Dial("tcp", p.server)
 	p.messageCount = 0
 	return err
 }
 
 func (p *RedisProvider) Publish(msg string) error {
-	p.conn.Send("rpush", p.list, msg)
+	conn := p.pool.Get()
+	defer conn.Close()
+	conn.Send("rpush", p.list, msg)
+
 	p.messageCount++
 	if p.messageCount >= 10000 {
 		p.messageCount = 0
-		p.conn.Flush()
-		_, err := p.conn.Receive()
+		conn.Flush()
+		_, err := conn.Receive()
 		return err
 	}
 	return nil
+}
+
+func newPool(server, password string) *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     3,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", server)
+			if err != nil {
+				return nil, err
+			}
+
+			if password != "" {
+				if _, err := c.Do("AUTH", password); err != nil {
+					c.Close()
+					return nil, err
+				}
+			}
+			return c, err
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
+	}
 }
