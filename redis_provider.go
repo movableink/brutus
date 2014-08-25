@@ -8,6 +8,7 @@ import (
 type RedisProvider struct {
 	server, list string
 	conn         redis.Conn
+	messageCount int
 }
 
 func (p *RedisProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command {
@@ -28,10 +29,18 @@ func (p *RedisProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command
 func (p *RedisProvider) Connect() error {
 	var err error
 	p.conn, err = redis.Dial("tcp", p.server)
+	p.messageCount = 0
 	return err
 }
 
 func (p *RedisProvider) Publish(msg string) error {
-	_, err := p.conn.Do("rpush", p.list, msg)
-	return err
+	p.conn.Send("rpush", p.list, msg)
+	p.messageCount++
+	if p.messageCount >= 10000 {
+		p.messageCount = 0
+		p.conn.Flush()
+		_, err := p.conn.Receive()
+		return err
+	}
+	return nil
 }
