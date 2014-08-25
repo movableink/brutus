@@ -19,7 +19,7 @@ func (p *RedisProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command
 		Use:   "redis",
 		Short: "push data to a redis list",
 		Run: func(cmd *cobra.Command, args []string) {
-			p.pool = newPool(p.server, "")
+			p.pool = newPool(p.server)
 			pusher(p, ac)
 		},
 	}
@@ -51,23 +51,12 @@ func (p *RedisProvider) Publish(msg string) error {
 	return nil
 }
 
-func newPool(server, password string) *redis.Pool {
+func newPool(server string) *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:     3,
 		IdleTimeout: 240 * time.Second,
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", server)
-			if err != nil {
-				return nil, err
-			}
-
-			if password != "" {
-				if _, err := c.Do("AUTH", password); err != nil {
-					c.Close()
-					return nil, err
-				}
-			}
-			return c, err
+			return redis.Dial("tcp", server)
 		},
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 			_, err := c.Do("PING")
