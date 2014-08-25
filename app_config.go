@@ -27,10 +27,12 @@ func (ac *AppConfig) RunCli(p DataPusher) error {
 	redisProvider := &RedisProvider{}
 	rabbitProvider := &RabbitProvider{}
 	nsqProvider := &NSQProvider{}
+	kafkaProvider := &KafkaProvider{}
 
 	command.AddCommand(redisProvider.Command(ac, p))
 	command.AddCommand(rabbitProvider.Command(ac, p))
 	command.AddCommand(nsqProvider.Command(ac, p))
+	command.AddCommand(kafkaProvider.Command(ac, p))
 
 	return command.Execute()
 }
