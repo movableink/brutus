@@ -51,9 +51,7 @@ func newPool(server string) *redis.Pool {
 }
 
 func (p *RedisProvider) NewPublisher() Publisher {
-	return &RedisPublisher{
-		provider: p,
-	}
+	return &RedisPublisher{provider: p}
 }
 
 type RedisPublisher struct {

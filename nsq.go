@@ -41,9 +41,7 @@ func (p *NSQProvider) Connect() error {
 }
 
 func (p *NSQProvider) NewPublisher() Publisher {
-	return &NSQPublisher{
-		provider: p,
-	}
+	return &NSQPublisher{provider: p}
 }
 
 type NSQPublisher struct {
