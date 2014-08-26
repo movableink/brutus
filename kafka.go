@@ -56,6 +56,14 @@ func (p *KafkaProvider) Connect() error {
 	return err
 }
 
-func (p *KafkaProvider) Publish(msg string) error {
-	return p.producer.QueueMessage(p.topic, sarama.StringEncoder("brutus"), sarama.StringEncoder(msg))
+func (p *KafkaProvider) NewPublisher() Publisher {
+	return &KafkaPublisher{provider: p}
+}
+
+type KafkaPublisher struct {
+	provider *KafkaProvider
+}
+
+func (p *KafkaPublisher) Publish(msg string) error {
+	return p.provider.producer.QueueMessage(p.provider.topic, sarama.StringEncoder("brutus"), sarama.StringEncoder(msg))
 }
