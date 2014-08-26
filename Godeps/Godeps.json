@@ -8,6 +8,10 @@
 			"Rev": "12e4b4183793ac4b061921e7980845e750679fd0"
 		},
 		{
+			"ImportPath": "github.com/Shopify/sarama",
+			"Rev": "f503eb0f7b9756c36537436e28560e067013b59a"
+		},
+		{
 			"ImportPath": "github.com/bitly/go-nsq",
 			"Comment": "v1.0.0",
 			"Rev": "93343a05dc795e9aeea5cc9338b54c6072af3805"
