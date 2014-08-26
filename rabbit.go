@@ -50,7 +50,20 @@ func (p *RabbitProvider) Connect() error {
 	return err
 }
 
-func (p *RabbitProvider) Publish(msg string) error {
+func (p *RabbitProvider) NewPublisher() Publisher {
+	channel, _ := p.connection.Channel()
+	return &RabbitPublisher{
+		provider: p,
+		channel:  channel,
+	}
+}
+
+type RabbitPublisher struct {
+	channel  *amqp.Channel
+	provider *RabbitProvider
+}
+
+func (p *RabbitPublisher) Publish(msg string) error {
 	amqpMsg := amqp.Publishing{
 		DeliveryMode: amqp.Persistent,
 		Timestamp:    time.Now(),
@@ -58,5 +71,5 @@ func (p *RabbitProvider) Publish(msg string) error {
 		Body:         []byte(msg),
 	}
 
-	return p.channel.Publish(p.exchange, p.routingKey, true, false, amqpMsg)
+	return p.channel.Publish(p.provider.exchange, p.provider.routingKey, true, false, amqpMsg)
 }

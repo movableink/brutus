@@ -36,21 +36,6 @@ func (p *RedisProvider) Connect() error {
 	return err
 }
 
-func (p *RedisProvider) Publish(msg string) error {
-	conn := p.pool.Get()
-	defer conn.Close()
-	conn.Send("rpush", p.list, msg)
-
-	p.messageCount++
-	if p.messageCount >= 10000 {
-		p.messageCount = 0
-		conn.Flush()
-		_, err := conn.Receive()
-		return err
-	}
-	return nil
-}
-
 func newPool(server string) *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:     3,
@@ -63,4 +48,29 @@ func newPool(server string) *redis.Pool {
 			return err
 		},
 	}
+}
+
+func (p *RedisProvider) NewPublisher() Publisher {
+	return &RedisPublisher{
+		provider: p,
+	}
+}
+
+type RedisPublisher struct {
+	provider *RedisProvider
+}
+
+func (p *RedisPublisher) Publish(msg string) error {
+	conn := p.provider.pool.Get()
+	defer conn.Close()
+	conn.Send("rpush", p.provider.list, msg)
+
+	p.provider.messageCount++
+	if p.provider.messageCount >= 10000 {
+		p.provider.messageCount = 0
+		conn.Flush()
+		_, err := conn.Receive()
+		return err
+	}
+	return nil
 }
