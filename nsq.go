@@ -40,6 +40,14 @@ func (p *NSQProvider) Connect() error {
 	return err
 }
 
-func (p *NSQProvider) Publish(msg string) error {
-	return p.producer.Publish(p.topic, []byte(msg))
+func (p *NSQProvider) NewPublisher() Publisher {
+	return &NSQPublisher{provider: p}
+}
+
+type NSQPublisher struct {
+	provider *NSQProvider
+}
+
+func (p *NSQPublisher) Publish(msg string) error {
+	return p.provider.producer.Publish(p.provider.topic, []byte(msg))
 }
