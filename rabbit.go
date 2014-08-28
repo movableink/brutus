@@ -65,7 +65,7 @@ type RabbitPublisher struct {
 
 func (p *RabbitPublisher) Publish(msg string) error {
 	amqpMsg := amqp.Publishing{
-		DeliveryMode: amqp.Persistent,
+		DeliveryMode: amqp.Transient,
 		Timestamp:    time.Now(),
 		ContentType:  "application/json",
 		Body:         []byte(msg),
