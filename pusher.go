@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"log"
-	"os"
 	"time"
 )
 
@@ -16,32 +14,28 @@ func pusher(p Provider, c *AppConfig) {
 		log.Fatal(err)
 	}
 
+	messages := Messages(c)
 	for i := 0; i < c.threads; i++ {
 		go func(p Publisher) {
-			throttle := time.Tick(time.Second / time.Duration(c.reqsPerSec))
-
-			file, err := os.Open(c.filename)
-			if err != nil {
-				log.Fatal(err)
+			var throttle <-chan time.Time
+			if c.reqsPerSec > 0 {
+				throttle = time.Tick(time.Second / time.Duration(c.reqsPerSec))
 			}
-			defer file.Close()
 
 			for {
-				file.Seek(0, 0)
-				scanner := bufio.NewScanner(file)
-				for scanner.Scan() {
+				if c.reqsPerSec > 0 {
 					<-throttle
-
-					err := p.Publish(scanner.Text())
-					if err != nil {
-						log.Fatal(err)
-					} else {
-						c.numberOfRequests += 1
-					}
 				}
 
-				if err := scanner.Err(); err != nil {
+				var message string
+				for ; !c.msgFilter(message); message = <-messages {
+				}
+
+				err := p.Publish(message)
+				if err != nil {
 					log.Fatal(err)
+				} else {
+					c.numberOfRequests += 1
 				}
 			}
 

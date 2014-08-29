@@ -6,11 +6,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type MsgFilter func(string) bool
+
 type AppConfig struct {
 	reqsPerSec       int
 	threads          int
 	numberOfRequests int
 	filename         string
+	msgFilter        MsgFilter
 	waitGroup        sync.WaitGroup
 }
 
@@ -28,11 +31,13 @@ func (ac *AppConfig) RunCli(p DataPusher) error {
 	rabbitProvider := &RabbitProvider{}
 	nsqProvider := &NSQProvider{}
 	kafkaProvider := &KafkaProvider{}
+	httpProvider := &HTTPProvider{}
 
 	command.AddCommand(redisProvider.Command(ac, p))
 	command.AddCommand(rabbitProvider.Command(ac, p))
 	command.AddCommand(nsqProvider.Command(ac, p))
 	command.AddCommand(kafkaProvider.Command(ac, p))
+	command.AddCommand(httpProvider.Command(ac, p))
 
 	return command.Execute()
 }
