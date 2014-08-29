@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -39,11 +40,17 @@ func (p *HTTPProvider) Connect() error {
 }
 
 func (p *HTTPProvider) NewPublisher() Publisher {
-	return &HTTPPublisher{provider: p}
+	c := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return errors.New("never redirect me")
+		},
+	}
+	return &HTTPPublisher{provider: p, client: c}
 }
 
 type HTTPPublisher struct {
 	provider *HTTPProvider
+	client   *http.Client
 }
 
 type LogMessage struct {
@@ -61,9 +68,9 @@ func (p *HTTPPublisher) Publish(msg string) error {
 	words := strings.Fields(logMsg.Message)
 	for _, w := range words {
 		if strings.HasPrefix(w, "/") {
-			resp, err := http.Get(p.provider.server + w)
+			resp, err := p.client.Get(p.provider.server + w)
 
-			if err != nil {
+			if resp == nil && err != nil {
 				fmt.Println("ERROR:", err)
 			}
 
