@@ -13,8 +13,8 @@ import (
 )
 
 type HTTPProvider struct {
-	server      string
-	matchTiming bool
+	server   string
+	multiple int
 }
 
 func (p *HTTPProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command {
@@ -22,7 +22,7 @@ func (p *HTTPProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command 
 		Use:   "http",
 		Short: "replay HTTP requests from a log file",
 		Run: func(cmd *cobra.Command, args []string) {
-			if p.matchTiming {
+			if p.multiple > 0 {
 				ac.reqsPerSec = 0
 			}
 			pusher(p, ac)
@@ -30,7 +30,7 @@ func (p *HTTPProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command 
 	}
 
 	command.Flags().StringVarP(&p.server, "server", "s", "http://localhost", "web server to send HTTP requests to")
-	command.Flags().BoolVarP(&p.matchTiming, "match-timing", "m", false, "attempt to match the timing of the original messages")
+	command.Flags().IntVarP(&p.multiple, "multiple", "m", 0, "replay traffic at a multiple of the original rate (0 = constant rate)")
 
 	ac.msgFilter = func(message string) bool {
 		return strings.Index(message, "GET") >= 0
@@ -77,7 +77,7 @@ func (p *HTTPPublisher) Publish(msg string) error {
 		return err
 	}
 
-	if p.provider.matchTiming {
+	if p.provider.multiple > 0 {
 		timestamp, err := time.Parse(time.RFC3339, logMsg.Timestamp)
 		if err != nil {
 			return err
@@ -98,7 +98,7 @@ func (p *HTTPPublisher) Publish(msg string) error {
 		p.lastDelta = currDelta
 
 		// how long has it been since we began publishing?
-		elapsed := time.Now().Sub(p.startTime)
+		elapsed := time.Now().Sub(p.startTime) * time.Duration(p.provider.multiple)
 
 		// sleep until it's time to send the next message (unless it's already time)
 		if elapsed < currDelta {
