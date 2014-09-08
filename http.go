@@ -25,16 +25,17 @@ func (p *HTTPProvider) Command(ac *AppConfig, pusher DataPusher) *cobra.Command 
 			if p.multiple > 0 {
 				ac.reqsPerSec = 0
 			}
+
+			ac.msgFilter = func(message string) bool {
+				return strings.Index(message, "GET") >= 0
+			}
+
 			pusher(p, ac)
 		},
 	}
 
 	command.Flags().StringVarP(&p.server, "server", "s", "http://localhost", "web server to send HTTP requests to")
 	command.Flags().IntVarP(&p.multiple, "multiple", "m", 0, "replay traffic at a multiple of the original rate (0 = constant rate)")
-
-	ac.msgFilter = func(message string) bool {
-		return strings.Index(message, "GET") >= 0
-	}
 
 	return &command
 }

@@ -23,6 +23,10 @@ func (ac *AppConfig) RunCli(p DataPusher) error {
 		Short: "stab your services in the back...by flooding them with traffic!",
 	}
 
+	ac.msgFilter = func(message string) bool {
+		return true
+	}
+
 	command.PersistentFlags().StringVarP(&ac.filename, "filename", "f", "messages.json", "file containing message data")
 	command.PersistentFlags().IntVarP(&ac.threads, "concurrency", "c", 1, "number of pusher threads to create")
 	command.PersistentFlags().IntVarP(&ac.reqsPerSec, "requests", "r", 200, "target number of req/s (per thread)")
