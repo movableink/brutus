@@ -28,7 +28,7 @@ func pusher(p Provider, c *AppConfig) {
 				}
 
 				var message string
-				for ; !c.msgFilter(message); message = <-messages {
+				for message = <-messages; !c.msgFilter(message); message = <-messages {
 				}
 
 				err := p.Publish(message)
