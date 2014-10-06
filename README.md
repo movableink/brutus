@@ -2,13 +2,10 @@
 1. Install https://github.com/tools/godep
 1. `go get github.com/movableink/brutus`
 
-_... in $GOPATH/src/github.com/movableink/brutus_
+_... in $GOPATH/src/github.com/movableink/brutus_ run
 
-1. run `godep get`
-
-### Build it Locally
-
-`go install` - this will place brutus in your `$GOBIN` directory
+1.  `godep get`
+1.  `go install` - this will place brutus in your `$GOBIN` directory
 
 ### Usage
 
